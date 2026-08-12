@@ -1,0 +1,214 @@
+
+
+               GToTree v1.7.10 (github.com/AstrobioMike/GToTree)
+
+
+ ---------------------------------  RUN INFO  --------------------------------- 
+
+    Command entered:
+    /home/bioinf/miniconda3/envs/gtotree/bin/GToTree -f filenames.txt -H Gammaproteobacteria -j 32 -o GtoTree
+
+
+    Input genome sources include:
+      - Fasta files listed in filenames.txt (55 genomes)
+
+                             Total input genomes: 55
+
+    HMM source to be used:
+      - Gammaproteobacteria (172 targets)
+
+    Options set:
+      - The output directory has been set to "GtoTree/"
+      - Number of jobs to run during parallelizable steps has been set to 32
+
+ ############################################################################## 
+ ####            Working on the genomes provided as fasta files            ####
+ ############################################################################## 
+
+           It is currently 01:16 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 0 minutes.
+
+_______________________________________________________________________________
+
+
+ ############################################################################## 
+ ####                     Filtering genes by length                        ####
+ ############################################################################## 
+
+     Keeping those with lengths within 20% of the median for the gene set.
+
+           It is currently 01:17 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 0 minutes.
+
+  ********************************** NOTICE **********************************  
+    1 gene(s) either had no hits in any genome, a hit in only one genome, or
+    only multiple hits per genome... Just so ya know!!
+
+        These included:
+
+                     UPRTase
+
+    Reported in "GtoTree/run_files/Target-genes-not-found-or-retained.txt".
+
+   If interested, you can figure out which of those scenarios was the cause by
+   checking out "GtoTree/SCG_hit_counts.tsv".
+  ****************************************************************************  
+
+________________________________________________________________________________ 
+
+
+
+ ############################################################################## 
+ ####                Filtering genomes with too few hits                   ####
+ ############################################################################## 
+
+     Removing those with fewer than 50% of the total SCGs targeted.
+
+           It is currently 01:17 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 0 minutes.
+
+  ********************************** NOTICE **********************************  
+    2 genome(s) removed from analysis due to having too few hits.
+
+    Reported in "GtoTree/run_files/Genomes_removed_for_too_few_hits.tsv".
+  ****************************************************************************  
+
+________________________________________________________________________________
+
+
+
+ ############################################################################## 
+ ####          Aligning, trimming, and inserting gap-sequences             ####
+ ############################################################################## 
+
+           It is currently 01:17 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 1 minutes.
+
+
+
+________________________________________________________________________________
+
+
+
+ ############################################################################## 
+ ####                  Catting all alignments together                     ####
+ ############################################################################## 
+
+           It is currently 01:18 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 2 minutes.
+
+
+________________________________________________________________________________
+
+
+
+ ############################################################################## 
+ ####                         Running FastTreeMP                           ####
+ ############################################################################## 
+
+           It is currently 01:18 AM; the process started at 01:16 AM.
+               Current process runtime: 0 hours and 2 minutes.
+
+FastTree Version 2.1.11 Double precision (No SSE3), OpenMP (32 threads)
+Alignment: GtoTree/Aligned_SCGs.faa
+Amino acid distances: BLOSUM45 Joins: balanced Support: SH-like 1000
+Search: Normal +NNI +SPR (2 rounds range 10) +ML-NNI opt-each=1
+TopHits: 1.00*sqrtN close=default refresh=0.80
+ML Model: Jones-Taylor-Thorton, CAT approximation with 20 rate categories
+Ignored unknown character X (seen 45231 times)
+      0.15 seconds: Checking top hits for      1 of     53 seqs
+Initial topology in 2.26 seconds
+Refining topology: 23 rounds ME-NNIs, 2 rounds ME-SPRs, 11 rounds ML-NNIs
+      2.26 seconds: ME NNI round 1 of 23, 1 of 51 splits
+      2.55 seconds: ME NNI round 2 of 23, 1 of 51 splits
+      2.83 seconds: SPR round   1 of   2, 1 of 104 nodes
+     12.08 seconds: SPR round   1 of   2, 101 of 104 nodes
+     12.33 seconds: ME NNI round 8 of 23, 1 of 51 splits
+     12.65 seconds: SPR round   2 of   2, 1 of 104 nodes
+     21.91 seconds: SPR round   2 of   2, 101 of 104 nodes
+     22.17 seconds: ME NNI round 15 of 23, 1 of 51 splits
+Total branch-length 4.008 after 22.83 sec
+     22.86 seconds: ML Lengths 1 of 51 splits
+     36.03 seconds: ML NNI round 1 of 11, 1 of 51 splits
+ML-NNI round 1: LogLk = -923495.817 NNIs 5 max delta 273.15 Time 54.41
+     55.67 seconds: Site likelihoods with rate category 1 of 20
+     56.97 seconds: Site likelihoods with rate category 2 of 20
+     58.25 seconds: Site likelihoods with rate category 3 of 20
+     59.54 seconds: Site likelihoods with rate category 4 of 20
+     60.84 seconds: Site likelihoods with rate category 5 of 20
+     62.14 seconds: Site likelihoods with rate category 6 of 20
+     63.44 seconds: Site likelihoods with rate category 7 of 20
+     64.74 seconds: Site likelihoods with rate category 8 of 20
+     66.04 seconds: Site likelihoods with rate category 9 of 20
+     67.34 seconds: Site likelihoods with rate category 10 of 20
+     68.60 seconds: Site likelihoods with rate category 11 of 20
+     69.81 seconds: Site likelihoods with rate category 12 of 20
+     71.11 seconds: Site likelihoods with rate category 13 of 20
+     72.42 seconds: Site likelihoods with rate category 14 of 20
+     73.72 seconds: Site likelihoods with rate category 15 of 20
+     75.02 seconds: Site likelihoods with rate category 16 of 20
+     76.32 seconds: Site likelihoods with rate category 17 of 20
+     77.62 seconds: Site likelihoods with rate category 18 of 20
+     78.85 seconds: Site likelihoods with rate category 19 of 20
+     80.08 seconds: Site likelihoods with rate category 20 of 20
+Switched to using 20 rate categories (CAT approximation)
+Rate categories were divided by 0.894 so that average rate = 1.0
+CAT-based log-likelihoods may not be comparable across runs
+Use -gamma for approximate but comparable Gamma(20) log-likelihoods
+     82.53 seconds: ML NNI round 2 of 11, 1 of 51 splits
+ML-NNI round 2: LogLk = -823018.624 NNIs 0 max delta 0.00 Time 101.40
+Turning off heuristics for final round of ML NNIs (converged)
+    101.39 seconds: ML NNI round 3 of 11, 1 of 51 splits
+ML-NNI round 3: LogLk = -823016.634 NNIs 0 max delta 0.00 Time 120.09 (final)
+    120.09 seconds: ML Lengths 1 of 51 splits
+Optimize all lengths: LogLk = -823016.460 Time 132.93
+Total time: 155.82 seconds Unique: 53/53 Bad splits: 0/50
+
+
+#################################################################################
+####                                 Done!!                                  ####
+#################################################################################
+
+  Overall, 53 genomes of the input 55 were retained (see notes below).
+
+    Tree written to:
+        GtoTree/GtoTree.tre
+
+    Alignment written to:
+        GtoTree/Aligned_SCGs.faa
+
+    Main genomes summary table written to:
+        GtoTree/Genomes_summary_info.tsv
+
+    Summary table with hits per target gene per genome written to:
+        GtoTree/SCG_hit_counts.tsv
+
+    Partitions file (for downstream use with mixed-model treeing) written to:
+        GtoTree/run_files/Partitions.txt
+
+ _______________________________________________________________________________
+
+  Notes:
+
+        2 genome(s) removed due to having too few hits to the targeted SCGs.
+        1 gene(s) either had no hits or only multiple hits in each genome.
+        2 genome(s) had an estimated redundancy of >= 10%.
+
+    Reported along with additional informative run files in:
+        GtoTree/run_files/
+
+ _______________________________________________________________________________
+
+    Log file written to:
+        GtoTree/gtotree-runlog.txt
+ _______________________________________________________________________________
+
+    Programs used and their citations have been written to:
+        GtoTree/citations.txt
+
+ _______________________________________________________________________________
+
+
+                                         Total process runtime: 0 hours and 4 minutes.
+                                                      Happy Sunday :)
+
