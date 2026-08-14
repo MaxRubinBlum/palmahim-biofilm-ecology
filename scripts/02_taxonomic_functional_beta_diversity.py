@@ -1,23 +1,17 @@
 #!/usr/bin/env python3
-"""Taxonomic versus functional beta-diversity (Supplementary Fig. 3 / Table 5).
+"""Taxonomic versus functional beta-diversity (Supplementary Fig. 3 / Table S5).
 
 Inputs
 ------
---abundance        CSV/TSV, rows=samples, columns=MAGs, relative abundance
---guild-membership CSV/TSV, rows=MAGs, columns=strict ecological guilds (0/1)
---primary-membership CSV/TSV, rows=MAGs, columns=primary-production traits (0/1)
---metadata         CSV/TSV with columns: sample, habitat
+--abundance        samples x MAG relative abundance (fractions or percentages)
+--guild-membership MAG x strict ecological guilds (0/1)
+--primary-membership MAG x primary-production traits (0/1)
+--metadata         columns: sample, habitat; optional inclusion flag
 
-Outputs
--------
-- distance matrices (taxonomic, guild, primary)
-- per-sample mean distance table used for paired Wilcoxon tests / boxplot
-- all-pair and within/between-substrate summaries
-- paired one-sided Wilcoxon statistics
-- Supplementary Fig. 3-style boxplot
-
-PERMANOVA, Mantel and Procrustes are implemented in the companion R script
-02b_beta_diversity_permutation_tests.R using vegan, matching the manuscript.
+If metadata contains `include_taxonomic_functional_beta_diversity`, rows with 0
+are excluded. In the manuscript this removes AnemPM22 and retains 18 biofilms.
+The taxonomic matrix always uses all MAGs in the abundance table. Missing MAGs
+in functional membership tables are treated as zero rather than being dropped.
 """
 from __future__ import annotations
 import argparse
@@ -49,7 +43,7 @@ def mean_distance_to_others(d: np.ndarray) -> np.ndarray:
     return d.sum(axis=1) / (d.shape[0] - 1)
 
 
-def distance_long(d: np.ndarray, samples: list[str], metadata: pd.DataFrame) -> pd.DataFrame:
+def distance_long(d, samples, metadata):
     rows = []
     for i in range(len(samples)):
         for j in range(i + 1, len(samples)):
@@ -61,14 +55,15 @@ def distance_long(d: np.ndarray, samples: list[str], metadata: pd.DataFrame) -> 
     return pd.DataFrame(rows)
 
 
-def summarize_distances(long_df: pd.DataFrame, representation: str) -> pd.DataFrame:
+def summarize_distances(long_df, representation):
     def one(x, label):
         q1, med, q3 = np.quantile(x, [0.25, 0.50, 0.75])
-        return {"representation": representation, "subset": label, "n_pairs": len(x),
-                "mean": np.mean(x), "median": med, "q1": q1, "q3": q3}
-    out = [one(long_df["distance"].to_numpy(), "all")]
+        return {"representation": representation, "subset": label,
+                "n_pairs": len(x), "mean": np.mean(x), "median": med,
+                "q1": q1, "q3": q3}
+    out = [one(long_df.distance.to_numpy(), "all")]
     for label in ("within", "between"):
-        x = long_df.loc[long_df["comparison"] == label, "distance"].to_numpy()
+        x = long_df.loc[long_df.comparison == label, "distance"].to_numpy()
         if len(x): out.append(one(x, label))
     return pd.DataFrame(out)
 
@@ -80,29 +75,40 @@ def main():
     ap.add_argument("--primary-membership", required=True)
     ap.add_argument("--metadata", required=True)
     ap.add_argument("--outdir", required=True)
+    ap.add_argument("--include-column", default="include_taxonomic_functional_beta_diversity")
     args = ap.parse_args()
 
     outdir = Path(args.outdir); outdir.mkdir(parents=True, exist_ok=True)
-    A = read_table(args.abundance)
-    G = read_table(args.guild_membership)
-    P = read_table(args.primary_membership)
-    meta = pd.read_csv(args.metadata, sep="\t" if args.metadata.endswith((".tsv", ".txt")) else ",")
-    meta = meta.set_index("sample")
+    A = read_table(args.abundance).astype(float)
+    G = read_table(args.guild_membership).astype(float)
+    P = read_table(args.primary_membership).astype(float)
+    sep = "\t" if args.metadata.lower().endswith((".tsv", ".txt")) else ","
+    meta = pd.read_csv(args.metadata, sep=sep).set_index("sample")
 
     samples = [s for s in A.index if s in meta.index]
-    mags = [m for m in A.columns if m in G.index and m in P.index]
-    A = A.loc[samples, mags].astype(float)
-    G = G.loc[mags].astype(float)
-    P = P.loc[mags].astype(float)
+    if args.include_column in meta.columns:
+        samples = [s for s in samples if bool(meta.loc[s, args.include_column])]
+    A = A.loc[samples]
     meta = meta.loc[samples]
 
-    matrices = {
-        "taxonomic": A.to_numpy(),
-        "guild": (A.to_numpy() @ G.to_numpy()),
-        "primary": (A.to_numpy() @ P.to_numpy()),
-    }
-    distances = {k: bray_curtis(hellinger(v)) for k, v in matrices.items()}
+    # Taxonomic distances use every MAG. Functional tables are aligned to the
+    # same MAG set, with absent assignments explicitly filled as zero.
+    mags = list(A.columns)
+    G = G.reindex(mags).fillna(0.0)
+    P = P.reindex(mags).fillna(0.0)
 
+    taxonomic = A.to_numpy()
+    guild = taxonomic @ G.to_numpy()
+    primary = taxonomic @ P.to_numpy()
+    matrices = {"taxonomic": taxonomic, "guild": guild, "primary": primary}
+
+    # Export the exact matrices consumed by the companion vegan script.
+    pd.DataFrame(taxonomic, index=samples, columns=mags).to_csv(outdir / "taxonomic_abundance.csv")
+    pd.DataFrame(guild, index=samples, columns=G.columns).to_csv(outdir / "guild_abundance.csv")
+    pd.DataFrame(primary, index=samples, columns=P.columns).to_csv(outdir / "primary_abundance.csv")
+    meta[["habitat"]].to_csv(outdir / "metadata_analysis_samples.csv")
+
+    distances = {k: bray_curtis(hellinger(v)) for k, v in matrices.items()}
     means = pd.DataFrame(index=samples)
     summaries = []
     for name, d in distances.items():
@@ -117,21 +123,18 @@ def main():
 
     tests = []
     for other in ("guild", "primary"):
-        stat = wilcoxon(means["taxonomic"], means[other], alternative="greater")
-        tests.append({"comparison": f"taxonomic > {other}", "W": stat.statistic, "P": stat.pvalue,
-                      "n_samples": len(means)})
+        stat = wilcoxon(means.taxonomic, means[other], alternative="greater")
+        tests.append({"comparison": f"taxonomic > {other}", "W": stat.statistic,
+                      "P": stat.pvalue, "n_samples": len(means)})
     pd.DataFrame(tests).to_csv(outdir / "paired_wilcoxon.csv", index=False)
 
-    # Supplementary Fig. 3-style plot: one point per biofilm, not all 153 pairwise distances.
-    plot_df = means.reset_index().melt(id_vars="sample", var_name="representation", value_name="mean_Bray_Curtis")
     order = ["taxonomic", "guild", "primary"]
-    vals = [plot_df.loc[plot_df.representation == x, "mean_Bray_Curtis"].to_numpy() for x in order]
+    vals = [means[x].to_numpy() for x in order]
     fig, ax = plt.subplots(figsize=(6.2, 4.8))
-    ax.boxplot(vals, labels=order, showfliers=False)
+    ax.boxplot(vals, tick_labels=order, showfliers=False, showmeans=True)
     rng = np.random.default_rng(1)
     for i, x in enumerate(vals, 1):
-        jitter = rng.normal(0, 0.035, len(x))
-        ax.scatter(np.full(len(x), i) + jitter, x, s=22, alpha=0.75)
+        ax.scatter(np.full(len(x), i) + rng.normal(0, 0.035, len(x)), x, s=22, alpha=0.75)
     ax.set_ylabel("Mean Bray–Curtis dissimilarity to other biofilms")
     ax.set_xlabel("")
     fig.tight_layout()

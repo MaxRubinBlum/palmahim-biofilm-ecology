@@ -1,8 +1,10 @@
-# Historical featureCounts commands recovered from output-file headers
-# These preserve the commands actually recorded by featureCounts and supersede any generic template when documenting historical provenance.
+# Historical featureCounts commands recovered verbatim from original output-file headers
+# These commands are the source of truth for featureCounts invocation in the supplied analyses.
 
 ## MAG101_PT13_counts(1).txt
-# Program:featureCounts v2.0.6; Command:"featureCounts" "-T" "24" "-p" "-t" "CDS" "-g" "ID" "-a" "MAG101.gff" "-o" "MAG101_PT13_counts.txt" "PT13_MAG101.bam"
+# Program:featureCounts v1.6.2; Command:"featureCounts" "-T" "24" "-p" "-t" "CDS" "-g" "ID" "-a" "MAG101.gff" "-o" "MAG101_PT13_counts.txt" "MAG101_PT13.bam"
 
 ## counts_eg.txt
-# Program:featureCounts v2.0.6; Command:"featureCounts" "-a" "egg_MAGs.gff" "-o" "counts.txt" "-t" "CDS" "-g" "ID" "PT9.bam" "PT10.bam"
+# Program:featureCounts v1.6.2; Command:"featureCounts" "-a" "egg_MAGs.gff" "-o" "counts.txt" "-t" "CDS" "-g" "ID" "PT9.bam" "PT10.bam"
+
+The historical invocations differ. The reference shell workflow in scripts/09_metatranscriptome_mapping.sh therefore documents analysis logic but is not presented as an identical command history for every library.

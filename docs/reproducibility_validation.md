@@ -1,12 +1,16 @@
 # Reproducibility validation against manuscript supplementary outputs
 
-The committed machine-readable inputs were reconstructed directly from the final processed analysis files supplied with the manuscript.
+The central custom analysis inputs were independently reconstructed from the final processed manuscript data and checked against Supplementary Table S5. For the public repository, the same inputs are generated reproducibly from the published Supplementary Tables S3 and S4 using `scripts/00_prepare_reproducibility_inputs.py`; duplicate wide TSV matrices are therefore not stored in version control.
+
+## Source-data validation
+
+The final normalized abundance block in the supplied `summary_biofilm(20260814-104958).xlsx` contained 19 sample columns. Each column summed to 100% before conversion to fractions. The corresponding published Supplementary Table S3 exposes these columns explicitly as `<sample> relative abundance (%)`, and the input builder verifies the same 100% invariant before conversion.
+
+Supplementary Table S4 contains 565 curated MAG rows. The input builder checks that every S3 MAG is represented in S4 and reconstructs the four mutually exclusive strict ecological guilds and three primary-production traits used in the manuscript analyses. `AnemPM22` is retained in the source tables but marked for exclusion from the 18-biofilm taxonomic-functional comparison.
 
 ## Taxonomic-functional beta-diversity
 
-`data/mag_abundance.tsv` contains sample × MAG relative abundance as fractions (0–1), derived from the normalized abundance block of `summary_biofilm(20260814-104958).xlsx`. Each source sample summed to 100% before conversion to fractions. `data/sample_metadata.tsv` marks `AnemPM22` for exclusion from the 18-biofilm taxonomic-functional comparison.
-
-Using `data/mag_abundance.tsv`, `data/strict_guild_membership.tsv` and `data/primary_production_membership.tsv`, the repository workflow reproduces Supplementary Table S5 exactly:
+Using the S3 abundance values and S4 curated assignments, the reconstructed analysis inputs reproduce Supplementary Table S5 exactly:
 
 | Profile | Mean Bray-Curtis |
 |---|---:|
@@ -14,11 +18,13 @@ Using `data/mag_abundance.tsv`, `data/strict_guild_membership.tsv` and `data/pri
 | Strict ecological guilds | 0.13066208127467652 |
 | Strict primary-production traits | 0.069498470943168 |
 
-The one-sided paired Wilcoxon signed-rank tests comparing taxonomic mean dissimilarity with each functional representation both give `P = 3.814697265625e-06`, matching Supplementary Table S5.
+The one-sided paired Wilcoxon signed-rank tests comparing each biofilm's mean taxonomic dissimilarity with its corresponding functional mean give `P = 3.814697265625e-06` for both comparisons, matching Supplementary Table S5 exactly.
+
+The workflow uses all 18 biofilms for the distance summaries and paired tests. The singleton crab-carapace sample remains in these analyses; the companion `vegan` script separately restricts substrate PERMANOVA to replicated substrate classes.
 
 ## Functional redundancy/core validation
 
-The following values calculated from `data/mag_abundance.tsv` and `data/curated_mag_traits.tsv` match Supplementary Table S5 exactly:
+The following values calculated from the reconstructed abundance and curated trait matrices match Supplementary Table S5 exactly:
 
 | Function | Carrier MAGs | Min abundance | Median abundance | Max abundance | Samples >=1% | Median effective MAG number |
 |---|---:|---:|---:|---:|---:|---:|
@@ -29,8 +35,12 @@ The following values calculated from `data/mag_abundance.tsv` and `data/curated_
 | CBB Form II | 27 | 0.009311855034296717 | 0.05605683354418451 | 0.1428109408151841 | 17 | 2.67307830145243 |
 | rTCA | 19 | 0.0009895365670411023 | 0.005903263292698565 | 0.07223099382228745 | 6 | 3.575476265458539 |
 
+For the published S5 redundancy panel, run `03_functional_redundancy.py` with the explicit trait columns `Methanotroph Sulfur_oxidizing_autotroph Autotrophic_carbon_fixation CBB_I CBB_II rTCA`.
+
 ## Provenance boundaries
 
-The repository can reproduce the central custom abundance-weighted analyses from curated inputs. The conversion from raw annotation-tool output to final expert-curated ecological assignments remains partly rule-based/manual. `provenance/source_files_manifest.tsv` records the exact supplied origin files and SHA-256 checksums. Small inspectable provenance derivatives are committed; larger raw annotation and transcriptomic files should be archived with the publication release rather than duplicated in GitHub.
+The repository can reproduce the central custom abundance-weighted analyses from the published curated inputs. The conversion from third-party annotation outputs to the final expert-curated ecological assignments in S4 remains partly rule-based/manual. This boundary is stated explicitly rather than being represented as a fully automated classification step.
 
-Historical featureCounts commands recovered from the original count-file headers are retained in `provenance/metatranscriptomics/featurecounts_commands.txt`. These commands should be treated as the historical source of truth for featureCounts invocation; generic shell examples in the repository are illustrative unless explicitly stated otherwise.
+`provenance/source_files_manifest.tsv` records the exact supplied origin filenames, sizes and SHA-256 checksums. Small inspectable provenance derivatives are committed; larger raw annotation and transcriptomic files should accompany the archival publication release rather than be duplicated in GitHub.
+
+Historical featureCounts commands recovered from the original count-file headers are retained in `provenance/metatranscriptomics/featurecounts_commands.txt`. These commands are the historical source of truth for featureCounts invocation; the generic shell workflow is illustrative because the original libraries used different command-line flags.
