@@ -4,15 +4,15 @@
 Inputs
 ------
 --abundance : samples x MAG relative-abundance matrix, fractions (0-1)
---traits    : MAG rows; one or more 0/1 functional columns
+--traits    : MAG rows with curated 0/1 functional columns
 --taxonomy  : MAG rows; must contain Order
 --metadata  : optional sample metadata. If it contains
               include_taxonomic_functional_beta_diversity, rows marked 0 are
               excluded (AnemPM22 in the manuscript analysis).
-
-Outputs one row per function with carrier MAG/order counts, min/median/max summed
-abundance, number of samples >=1%, core status, and median inverse-Simpson
-effective MAG number.
+--trait-columns : optional explicit functions to summarize. For the published
+                  S5 redundancy panel use Methanotroph,
+                  Sulfur_oxidizing_autotroph, Autotrophic_carbon_fixation,
+                  CBB_I, CBB_II and rTCA.
 """
 import argparse
 from pathlib import Path
@@ -41,6 +41,7 @@ def main():
     ap.add_argument("--taxonomy", required=True)
     ap.add_argument("--metadata")
     ap.add_argument("--include-column", default="include_taxonomic_functional_beta_diversity")
+    ap.add_argument("--trait-columns", nargs="+")
     ap.add_argument("--out", required=True)
     ap.add_argument("--threshold", type=float, default=0.01)
     args = ap.parse_args()
@@ -61,9 +62,15 @@ def main():
     T = T.loc[mags]
     tax = tax.loc[mags]
 
+    trait_columns = args.trait_columns if args.trait_columns else list(T.columns)
+    missing_traits = [c for c in trait_columns if c not in T.columns]
+    if missing_traits:
+        raise ValueError(f"Trait columns not found: {missing_traits}")
+
     rows = []
-    for trait in T.columns:
-        carriers = T[trait].fillna(0).astype(bool)
+    for trait in trait_columns:
+        values = pd.to_numeric(T[trait], errors="coerce").fillna(0)
+        carriers = values.astype(bool)
         cmags = T.index[carriers].tolist()
         X = A[cmags].to_numpy() if cmags else np.zeros((len(A), 0))
         summed = X.sum(axis=1)
