@@ -2,11 +2,13 @@ name: palmahim-biofilm-ecology
 channels:
   - conda-forge
 dependencies:
-  - python>=3.11
-  - pandas
-  - numpy
-  - scipy
-  - statsmodels
-  - matplotlib
-  - openpyxl
-  - pip
+  - "python>=3.11,<3.14"
+  - "numpy>=1.26,<3"
+  - "pandas>=2.0,<3"
+  - "scipy>=1.11,<2"
+  - "statsmodels>=0.14,<1"
+  - "matplotlib>=3.9,<4"
+  - "openpyxl>=3.1,<4"
+  - "r-base>=4.3,<5"
+  - "r-vegan>=2.6,<3"
+  - "r-ggplot2>=3.4,<4"

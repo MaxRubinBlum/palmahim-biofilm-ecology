@@ -1,0 +1,37 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite the associated manuscript and the archived software release when available."
+title: "Palmahim seep biofilm ecology analyses"
+type: software
+authors:
+  - family-names: Rubin-Blum
+    given-names: Maxim
+repository-code: "https://github.com/MaxRubinBlum/palmahim-biofilm-ecology"
+license: MIT
+version: 0.1.0
+date-released: 2026-08-31
+preferred-citation:
+  type: article
+  title: "Hydrocarbon seep biofilms share a common functional organization across diverse substrates"
+  authors:
+    - family-names: Rubin-Blum
+      given-names: Maxim
+    - family-names: Tendler
+      given-names: Tony
+    - family-names: Malavin
+      given-names: Stas
+    - family-names: Ratinskaia
+      given-names: Lina
+    - family-names: Harbuzov
+      given-names: Zoya
+    - family-names: Yudkovski
+      given-names: Yana
+    - family-names: Shmakova
+      given-names: Lyubov
+    - family-names: Shlomo Itzhari
+      given-names: Sheli
+    - family-names: Oren
+      given-names: Matan
+    - family-names: Makovsky
+      given-names: Yizhaq
+    - family-names: Guy-Haim
+      given-names: Tamar

@@ -1,0 +1,64 @@
+name: reproducibility-smoke-test
+
+on:
+  push:
+    branches:
+      - main
+      - nature-software-checklist
+  pull_request:
+
+jobs:
+  python-demo:
+    name: Python ${{ matrix.python-version }} demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Compile Python scripts
+        run: python -m compileall -q scripts
+      - name: Run synthetic reviewer demo
+        run: python scripts/run_demo.py --outdir outputs/demo_ci
+
+  r-companion:
+    name: R 4.4 companion workflow
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+      - name: Generate demo matrices
+        run: python scripts/run_demo.py --outdir outputs/demo_ci
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "4.4"
+      - name: Install R dependency
+        run: Rscript -e 'install.packages("vegan", repos="https://cloud.r-project.org")'
+      - name: Check shell and R syntax
+        run: |
+          bash -n scripts/*.sh
+          Rscript -e 'for (f in Sys.glob("scripts/*.R")) parse(file=f)'
+      - name: Run R permutation companion on demo data
+        run: |
+          Rscript scripts/02b_beta_diversity_permutation_tests.R \
+            outputs/demo_ci/taxonomic_abundance.csv \
+            outputs/demo_ci/guild_abundance.csv \
+            outputs/demo_ci/primary_abundance.csv \
+            outputs/demo_ci/metadata_analysis_samples.csv \
+            outputs/demo_ci

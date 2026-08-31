@@ -1,0 +1,11 @@
+{
+  "mean_bray_curtis": {
+    "taxonomic": 0.11866717634372449,
+    "guild": 0.04663683547885813,
+    "primary": 0.03864436134709344
+  },
+  "paired_wilcoxon_p": {
+    "taxonomic > guild": 0.015625,
+    "taxonomic > primary": 0.015625
+  }
+}
