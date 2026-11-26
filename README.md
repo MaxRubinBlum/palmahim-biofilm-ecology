@@ -220,6 +220,10 @@ Historical featureCounts commands recovered from original output headers are sto
 - CLR correlations annotate support for C1 edges but do not define biological edge inclusion.
 - Supplementary Fig. 3 uses one mean dissimilarity value per biofilm for paired Wilcoxon tests, avoiding pseudoreplication of all pairwise distances.
 
+## Assembly-independent community analysis (SingleM)
+
+The revision adds a parameterized SingleM workflow for the 19 raw metagenomes, original ATLAS assemblies and 565 MAGs, together with marker-recovery validation, rarefied bacterial alpha diversity, marker-averaged beta diversity and comparison against the original MAG abundance profiles. See [SingleM reproducibility](docs/singlem_reproducibility.md) for input requirements, commands, analytical definitions and validation status. The new scripts are under `scripts/singlem/`; the consolidated code requires parity testing against the recorded workstation outputs before an archival release.
+
 ## Automated validation
 
 The GitHub Actions workflow [`.github/workflows/reproducibility.yml`](.github/workflows/reproducibility.yml) provides a reviewer-facing smoke test. It:
